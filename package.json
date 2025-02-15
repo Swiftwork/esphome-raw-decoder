@@ -1,0 +1,17 @@
+{
+  "name": "esphome-decoder",
+  "version": "1.0.0",
+  "description": "Decode remote receiver raw dump logs into binary from ESPHome.",
+  "main": "decoder.js",
+  "author": "Erik Hughes <erik.hughes@outlook.com>",
+  "license": "MIT",
+  "packageManager": "yarn@4.6.0",
+  "type": "module",
+  "scripts": {
+    "process": "node decoder.js process"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0"
+  }
+}

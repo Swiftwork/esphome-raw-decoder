@@ -34,8 +34,12 @@ yarn process --one 1500 --zero 500 dump.txt
 ## Input Format
 
 The tool processes ESPHome raw IR/RF dump files. Each line should contain IR/RF timings in the format:
+```js
+[timestamp][remote.raw:0]: Received Raw: 1234, -420, 1287, -1265
 ```
-[timestamp][remote.raw:0]: Received Raw: 1234, -5678, 910, -1112
+Into:
+```js
+1101
 ```
 
 ## Output

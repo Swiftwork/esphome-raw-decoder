@@ -16,7 +16,10 @@ program
   .option('--zero <microseconds>', 'zero threshold in microseconds', 450)
   .option('--tolerance <percent>', 'tolerance percentage', 25)
   .option('--min-length <bits>', 'minimum signal length', 8)
+  .option('--max-length <bits>', 'maximum signal length', 32)
   .option('--reverse', 'reverse bit order', true)
+  .option('--faults', 'show faults with an X', false)
+  .option('--hex', 'output hex after binary', false)
   .argument('[file]', 'dump file to process', 'dump.txt')
   .action(processAction);
 

@@ -27,6 +27,7 @@ yarn process [options] [file]
 - `--reverse` - Reverse bit order (default: true)
 - `--faults` - Show timing faults as 'X' in output (default: false)
 - `--hex` - Add hexadecimal values to output (default: false)
+- `--group` - Attempt to group signals by length (default: false)
 
 ### Example
 

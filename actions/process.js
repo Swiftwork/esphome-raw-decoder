@@ -6,8 +6,12 @@ const lineRegex = /.*remote.raw:\d+\]:(?: Received Raw:)? (.*)/;
 
 function processSignal(signal, options) {
   const numbers = signal.split(/[, ]+/).map(Number);
-  if (numbers.length < options.minLength) return null;
-  if (numbers.length > options.maxLength) return null;
+  if (
+    numbers.length < options.minLength ||
+    numbers.length > options.maxLength
+  ) {
+    return { binary: null, length: numbers.length };
+  }
 
   let binary = "";
   for (let i = 0; i < numbers.length; i++) {
@@ -23,9 +27,13 @@ function processSignal(signal, options) {
     }
   }
 
-  if (binary.length < options.minLength) return null;
-  if (binary.length > options.maxLength) return null;
-  return options.reverse ? binary.split("").reverse().join("") : binary;
+  if (binary.length < options.minLength || binary.length > options.maxLength) {
+    return { binary: null, length: binary.length };
+  }
+  return {
+    binary: options.reverse ? binary.split("").reverse().join("") : binary,
+    length: binary.length,
+  };
 }
 
 export async function processAction(file, options) {
@@ -40,6 +48,7 @@ export async function processAction(file, options) {
     maxLength: parseInt(options.maxLength),
     reverse: !!options.reverse,
     faults: !!options.faults,
+    group: !!options.group,
   };
 
   try {
@@ -50,6 +59,9 @@ export async function processAction(file, options) {
     });
 
     let currentSignal = "";
+    let previousLength = options.maxLength;
+    let validSignal = false;
+
     for await (const line of rl) {
       const match = line.match(lineRegex);
       const data = match?.[1]?.trim();
@@ -67,7 +79,8 @@ export async function processAction(file, options) {
         continue; // Wait for next line
       }
 
-      const binary = processSignal(currentSignal, processOptions);
+      const { binary, length } = processSignal(currentSignal, processOptions);
+
       if (binary) {
         if (options.hex) {
           const hex = parseInt(binary, 2).toString(16).toUpperCase();
@@ -75,7 +88,14 @@ export async function processAction(file, options) {
         } else {
           outputStream.write(`${binary}\n`);
         }
+        validSignal = true;
       }
+
+      if (validSignal && processOptions.group && previousLength > length) {
+        outputStream.write("\n");
+      }
+      previousLength = length;
+      validSignal = false;
       currentSignal = ""; // Reset for next signal
     }
 

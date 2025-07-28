@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESPHome RF/IR Signal Graph</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .signal-container {
+      margin-bottom: 40px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fafafa;
+    }
+
+    .signal-info {
+      margin-bottom: 15px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .binary {
+      color: #0066cc;
+      font-weight: bold;
+    }
+
+    .length {
+      color: #666;
+    }
+
+    canvas {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      height: 200px !important;
+      max-height: 200px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>ESPHome RF/IR Signal Analysis</h1>
+    <div id="signals"></div>
+  </div>
+
+  <script>
+    const signals = '{{ SIGNALS_DATA }}';
+
+    function createSignalChart(signal, index) {
+      const container = document.createElement('div');
+      container.className = 'signal-container';
+
+      const info = document.createElement('div');
+      info.className = 'signal-info';
+      info.innerHTML = `
+                <span class="binary">Signal ${index + 1}</span> | 
+                <span class="length">Length: ${signal.length} pulses</span>
+            `;
+      container.appendChild(info);
+
+      const canvas = document.createElement('canvas');
+      canvas.id = `chart-${index}`;
+      canvas.width = 800;
+      canvas.height = 200;
+      container.appendChild(canvas);
+
+      document.getElementById('signals').appendChild(container);
+
+      // Create chart data
+      const data = [];
+      let time = 0;
+      let isHigh = true; // Start with high
+
+      for (let i = 0; i < signal.numbers.length; i++) {
+        const duration = Math.abs(signal.numbers[i]);
+
+        // Add point at current time with current state
+        data.push({ x: time, y: isHigh ? 1 : 0 });
+
+        // Add point at end of duration with same state
+        time += duration;
+        data.push({ x: time, y: isHigh ? 1 : 0 });
+
+        // Alternate between high and low for next pulse
+        isHigh = !isHigh;
+      }
+
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          datasets: [{
+            label: 'Signal',
+            data: data,
+            borderColor: '#0066cc',
+            backgroundColor: '#0066cc',
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: false,
+            tension: 0
+          }]
+        },
+        options: {
+          animation: false,
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'nearest'
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: {
+                display: true,
+                text: 'Time (microseconds)'
+              },
+              ticks: {
+                callback: function (value) {
+                  return value.toLocaleString();
+                }
+              }
+            },
+            y: {
+              min: -0,
+              max: 1,
+              ticks: {
+                stepSize: 1,
+                callback: function (value) {
+                  return value === 1 ? 'High' : 'Low';
+                }
+              },
+              title: {
+                display: true,
+                text: 'Signal Level'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              enabled: true,
+              mode: 'nearest',
+              intersect: false,
+              callbacks: {
+                title: function (context) {
+                  const dataIndex = context[0].dataIndex;
+                  const pulseIndex = Math.floor(dataIndex / 2);
+                  const isStart = dataIndex % 2 === 0;
+                  return `Pulse ${pulseIndex + 1} (${isStart ? 'Start' : 'End'})`;
+                },
+                label: function (context) {
+                  const dataIndex = context.dataIndex;
+                  const pulseIndex = Math.floor(dataIndex / 2);
+                  const duration = signal.numbers[pulseIndex];
+                  const state = context.parsed.y === 1 ? 'High' : 'Low';
+
+                  return [
+                    `State: ${state}`,
+                    `Duration: ${Math.abs(duration).toLocaleString()}μs`,
+                    `Time: ${context.parsed.x.toLocaleString()}μs`
+                  ];
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Create charts for all signals
+    signals.forEach((signal, index) => {
+      createSignalChart(signal, index);
+    });
+  </script>
+</body>
+
+</html>

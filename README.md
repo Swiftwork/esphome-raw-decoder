@@ -1,6 +1,6 @@
 # ESPHome Raw Decoder
 
-CLI tool to process and decode ESPHome raw IR dump files into binary sequences.
+CLI tool to process and decode ESPHome raw RF dump files into binary sequences.
 
 ## Installation
 
@@ -39,7 +39,7 @@ yarn process --one 1500 --zero 500 dump.txt
 
 ## Input Format
 
-The tool processes ESPHome raw IR/RF dump files. Each line should contain IR/RF timings in the format:
+The tool processes ESPHome raw RF/IR dump files. Each line should contain RF/IR timings in the format:
 
 ```js
 [timestamp][remote.raw:0]: Received Raw: 1234, -420, 1287, -1265
@@ -47,7 +47,7 @@ The tool processes ESPHome raw IR/RF dump files. Each line should contain IR/RF 
 
 ## Output
 
-The tool outputs binary sequences, one per line. Each sequence represents the decoded IR/RF signal.
+The tool outputs binary sequences, one per line. Each sequence represents the decoded RF/IR signal.
 When using `--hex`, the output includes both binary and hexadecimal formats:
 
 ```js

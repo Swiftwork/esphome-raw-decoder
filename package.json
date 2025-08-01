@@ -8,7 +8,9 @@
   "packageManager": "yarn@4.6.0",
   "type": "module",
   "scripts": {
-    "process": "node decoder.js process"
+    "decode": "node decoder.js decode",
+    "analyze": "node decoder.js analyze",
+    "render": "node decoder.js render"
   },
   "dependencies": {
     "chalk": "^5.4.1",
